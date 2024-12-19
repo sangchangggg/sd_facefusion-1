@@ -2,16 +2,15 @@ import json
 import os
 from typing import List, Optional
 
+from facefusion.choices import face_mask_regions
 from facefusion.memory import tune_performance
 # Assuming the necessary imports are available in the environment:
 from facefusion.typing import (
-    FaceAnalyserOrder, FaceAnalyserAge,
+    FaceSelectorOrder, FaceAnalyserAge,
     FaceAnalyserGender, TempFrameFormat, OutputVideoEncoder, FaceSelectorMode, FaceDetectorModel, FaceRecognizerModel,
     Padding, FaceMaskType, FaceMaskRegion, LogLevel, OutputVideoPreset
 )
-from facefusion.choices import face_mask_regions
 from modules.paths_internal import script_path
-
 
 execution_thread_count, execution_queue_count, video_memory_strategy = tune_performance()
         
@@ -34,7 +33,7 @@ class JobParams:
         self.video_memory_strategy: Optional[str] = video_memory_strategy
         self.max_memory: Optional[int] = None
         # face analyser
-        self.face_analyser_order: Optional[FaceAnalyserOrder] = 'best-worst'
+        self.face_analyser_order: Optional[FaceSelectorOrder] = 'best-worst'
         self.face_analyser_age: Optional[FaceAnalyserAge] = None
         self.face_analyser_gender: Optional[FaceAnalyserGender] = None
         self.face_detector_model: Optional[FaceDetectorModel] = 'yoloface'
@@ -103,8 +102,7 @@ class JobParams:
                 if key == "reference_face_dict" or key == "reference_face_dict_2":
                     continue
                 out_params[key] = self.__dict__[key]
-            else:
-                print(f"Could not serialize {key}={value}")
+
         return json.dumps(out_params, indent=4)
 
     def to_dict(self):

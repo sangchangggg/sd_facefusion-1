@@ -126,9 +126,7 @@ def print_requirement_installation_error(err):
 
 
 def install_runtimes():
-    torch_version = '2.0.1'
-    torch_cuda_wheel = 'cu118'  # Update this to the correct CUDA version if needed
-    onnxruntime_version = '1.16.3'
+    onnxruntime_version = '1.20.1'
     onnxruntime_cuda_name = 'onnxruntime-gpu'
     # Uninstall existing PyTorch and ONNX Runtime installations
     if not is_installed(onnxruntime_cuda_name, onnxruntime_version, True):
@@ -138,7 +136,7 @@ def install_runtimes():
 
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-ext_dir = os.path.join(base_dir, 'extensions-builtin', 'sd_facefusion', 'facefusion')
+ext_dir = os.path.join(base_dir, 'extensions', 'sd_facefusion')
 
 if ext_dir not in sys.path:
     sys.path.insert(0, ext_dir)

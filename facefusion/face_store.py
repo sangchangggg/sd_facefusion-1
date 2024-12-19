@@ -1,10 +1,10 @@
-from typing import Optional, List, Tuple
 import hashlib
+from typing import Optional, List, Tuple
+
 import numpy
 
-import facefusion.globals
+from facefusion import state_manager
 from facefusion.typing import VisionFrame, Face, FaceStore, FaceSet
-
 
 FACE_STORE: FaceStore = \
     {
@@ -17,6 +17,10 @@ FACE_STORE_2: FaceStore = \
         'static_faces': {},
         'reference_faces': {}
     }
+
+
+def get_face_store() -> FaceStore:
+    return FACE_STORE
 
 
 def get_static_faces(vision_frame: VisionFrame, dict_2=False) -> Optional[List[Face]]:
@@ -48,27 +52,32 @@ def create_frame_hash(vision_frame: VisionFrame) -> Optional[str]:
     return hashlib.sha1(vision_frame.tobytes()).hexdigest() if numpy.any(vision_frame) else None
 
 
-def get_reference_faces_original() -> Optional[FaceSet]:
-    if FACE_STORE['reference_faces']:
-        return FACE_STORE['reference_faces']
-    return None
-
-
-def get_reference_faces() -> Tuple[Optional[FaceSet], Optional[FaceSet]]:
-    from extensions.sd_facefusion.facefusion.face_analyser import get_average_face
+def get_reference_faces(is_face_swapper: bool = False) -> Tuple[Optional[FaceSet], Optional[FaceSet]]:
+    from facefusion.face_analyser import get_avg_faces
 
     set_out = {}
     set_out_2 = {}
     all_faces = []
-    for frame_number, faces in facefusion.globals.reference_face_dict.items():
-        for face in faces:
-            all_faces.append(face)
-    set_out['reference_faces'] = all_faces
-    all_faces = []
-    for frame_number, faces in facefusion.globals.reference_face_dict_2.items():
-        for face in faces:
-            all_faces.append(face)
-    set_out_2['reference_faces'] = all_faces
+    all_faces_2 = []
+
+    if not is_face_swapper and 'face_swapper' in state_manager.get_item('processors'):
+        source_face, source_face_2 = get_avg_faces()
+        if source_face:
+            all_faces.append(source_face)
+        if source_face_2:
+            all_faces_2.append(source_face_2)
+    reference_face_dict = state_manager.get_item('reference_face_dict')
+    if reference_face_dict:
+        for frame_number, faces in reference_face_dict.items():
+            for face in faces:
+                all_faces.append(face)
+        set_out['reference_faces'] = all_faces
+    reference_face_dict_2 = state_manager.get_item('reference_face_dict_2')
+    if reference_face_dict_2:
+        for frame_number, faces in reference_face_dict_2.items():
+            for face in faces:
+                all_faces_2.append(face)
+        set_out_2['reference_faces'] = all_faces_2
     return set_out, set_out_2
 
 
